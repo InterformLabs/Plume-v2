@@ -169,32 +169,46 @@
       setTimeout(() => r.remove(), 600);
     });
   });
- 
+
+  function openLightbox(lb) {
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    history.pushState({ lightbox: lb.id }, '');
+  }
+
+  function closeAll() {
+    document.querySelectorAll('.lightbox.open').forEach(lb => {
+      lb.classList.remove('open');
+    });
+    document.body.style.overflow = '';
+  }
+
+  // Back button closes lightbox instead of leaving page
+  window.addEventListener('popstate', () => {
+    closeAll();
+  });
+
   document.getElementById('btnFood').addEventListener('click', e => {
     e.preventDefault();
-    document.getElementById('lbFood').classList.add('open');
-    document.body.style.overflow = 'hidden';
+    openLightbox(document.getElementById('lbFood'));
   });
- 
+
   document.getElementById('closeFood').addEventListener('click', () => {
-    document.getElementById('lbFood').classList.remove('open');
-    document.body.style.overflow = '';
+    history.back();
   });
- 
+
   document.getElementById('btnDrinks').addEventListener('click', e => {
     e.preventDefault();
-    document.getElementById('lbDrinks').classList.add('open');
-    document.body.style.overflow = 'hidden';
+    openLightbox(document.getElementById('lbDrinks'));
   });
- 
+
   document.getElementById('closeDrinks').addEventListener('click', () => {
-    document.getElementById('lbDrinks').classList.remove('open');
-    document.body.style.overflow = '';
+    history.back();
   });
- 
+
   document.querySelectorAll('.lightbox').forEach(lb => {
     lb.addEventListener('click', e => {
-      if (e.target === lb) { lb.classList.remove('open'); document.body.style.overflow = ''; }
+      if (e.target === lb) { history.back(); }
     });
   });
 </script>
