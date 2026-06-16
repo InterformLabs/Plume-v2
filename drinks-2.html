@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plume — Drinks</title>
+<link rel="icon" href="logo plume.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-deep: #151f15;
+    --gold: #c9a96e; --gold-dim: rgba(201,169,110,0.1); --gold-line: rgba(201,169,110,0.25);
+    --white: #f0ece4; --white-dim: rgba(240,236,228,0.55); --white-faint: rgba(240,236,228,0.2);
+  }
+  html, body { width: 100%; min-height: 100%; background: var(--bg-deep); color: var(--white); font-family: 'Outfit', sans-serif; font-weight: 300; -webkit-text-size-adjust: 100%; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events: none; z-index: 999; opacity: 0.5; }
+  .glow { position: fixed; top: -200px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 600px; height: 400px; background: radial-gradient(ellipse, rgba(201,169,110,0.06) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+
+  .wrap { position: relative; z-index: 1; width: 100%; max-width: 640px; margin: 0 auto; padding: 56px 24px 80px; }
+
+  .back { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(201,169,110,0.4); text-decoration: none; margin-bottom: 48px; transition: color 0.2s; }
+  .back:hover { color: var(--gold); }
+  .back svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+  .page-header { text-align: center; margin-bottom: 56px; }
+  .page-header .deco-line { width: 1px; height: 40px; background: linear-gradient(to bottom, transparent, var(--gold-line)); margin: 0 auto 28px; }
+  .page-header h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(42px, 10vw, 64px); font-weight: 300; letter-spacing: 0.25em; text-transform: uppercase; color: var(--white); margin-bottom: 16px; }
+  .page-header .sub { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); opacity: 0.6; }
+
+  /* tab nav */
+  .tab-nav { display: flex; gap: 0; margin-bottom: 48px; border-bottom: 1px solid var(--gold-line); }
+  .tab { flex: 1; padding: 14px 8px; text-align: center; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--white-faint); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.2s, border-color 0.2s; -webkit-tap-highlight-color: transparent; }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* panels */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* section */
+  .section { margin-bottom: 48px; }
+  .section-title { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+  .section-title::before, .section-title::after { content: ''; flex: 1; height: 1px; background: var(--gold-line); }
+  .section-title span { font-family: 'Cormorant Garamond', serif; font-size: 11px; font-weight: 400; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
+
+  /* cocktail item — name + desc + price */
+  .item { padding: 18px 0; border-bottom: 1px solid rgba(201,169,110,0.08); }
+  .item:last-child { border-bottom: none; }
+  .item-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 5px; }
+  .item-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; letter-spacing: 0.04em; color: var(--white); line-height: 1.2; }
+  .item-price { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 300; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
+  .item-desc { font-size: 12px; line-height: 1.65; color: var(--white-dim); letter-spacing: 0.02em; }
+  .item-desc em { font-style: italic; color: rgba(201,169,110,0.55); }
+
+  /* zero proof items in 3-col grid */
+  .zero-proof-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .zero-proof-item { padding: 16px 12px; border: 1px solid rgba(201,169,110,0.12); background: var(--gold-dim); text-align: center; }
+  .zero-proof-item .item-name { font-size: 16px; margin-bottom: 8px; }
+  .zero-proof-item .item-desc { font-size: 11px; }
+  .zero-proof-price { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: var(--gold); margin-top: 10px; }
+
+  /* spirits — two col on wider screens */
+  .spirits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+  @media (max-width: 480px) { .spirits-grid { grid-template-columns: 1fr; } .zero-proof-grid { grid-template-columns: 1fr; } }
+
+  .spirit-section { margin-bottom: 36px; }
+  .spirit-section-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(201,169,110,0.15); }
+  .spirit-item { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .spirit-item:last-child { border-bottom: none; }
+  .spirit-name { font-size: 13px; color: var(--white-dim); flex: 1; }
+  .spirit-prices { font-size: 12px; color: var(--gold); white-space: nowrap; }
+  .spirit-prices span { color: rgba(201,169,110,0.5); }
+
+  /* beer & wine */
+  .bw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+  @media (max-width: 480px) { .bw-grid { grid-template-columns: 1fr; } }
+  .bw-section { margin-bottom: 32px; }
+  .bw-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(201,169,110,0.15); }
+  .bw-item { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .bw-item:last-child { border-bottom: none; }
+  .bw-name { font-size: 13px; color: var(--white-dim); flex: 1; }
+  .bw-price { font-size: 12px; color: var(--gold); white-space: nowrap; }
+
+  .note { text-align: center; font-size: 11px; letter-spacing: 0.12em; font-style: italic; color: rgba(240,236,228,0.3); margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(201,169,110,0.1); }
+
+  .page-footer { text-align: center; margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--gold-line); }
+  .page-footer a { font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(201,169,110,0.25); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="wrap">
+
+  <a class="back" href="index.html">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Back
+  </a>
+
+  <div class="page-header">
+    <div class="deco-line"></div>
+    <h1>Drinks</h1>
+    <p class="sub">Plume Cocktail Bar · Edmonton</p>
+  </div>
+
+  <!-- Tab navigation -->
+  <div class="tab-nav">
+    <div class="tab active" onclick="switchTab('cocktails', this)">Cocktails</div>
+    <div class="tab" onclick="switchTab('bar', this)">Bar</div>
+    <div class="tab" onclick="switchTab('beer', this)">Beer &amp; Wine</div>
+  </div>
+
+  <!-- COCKTAILS -->
+  <div class="panel active" id="panel-cocktails">
+
+    <div class="section">
+      <div class="section-title"><span>Signature</span></div>
+
+      <div class="item">
+        <div class="item-row"><span class="item-name">The Peacock</span><span class="item-price">$18</span></div>
+        <div class="item-desc">VSOP Cognac Integrated with Cynar and Port, Lemon, Fig Expression, and a House-Built Clove Syrup, Egg White <em>(3oz)</em></div>
+      </div>
+
+      <div class="item">
+        <div class="item-row"><span class="item-name">Vanis Kiss</span><span class="item-price">$18</span></div>
+        <div class="item-desc">Rose and Elderflower Gin, Chambord, House-Made Pear &amp; Rosemary Syrup, Fresh Lime, Topped with Ginger Beer <em>(2oz)</em></div>
+      </div>
+
+      <div class="item">
+        <div class="item-row"><span class="item-name">Kingfisher</span><span class="item-price">$18</span></div>
+        <div class="item-desc">Bourbon Infused with Cigar Leaf, Red Vermouth Infused With Cacao Nibs, Balanced by a Bespoke Cinnamon Syrup <em>(2oz)</em></div>
+      </div>
+
+      <div class="item">
+        <div class="item-row"><span class="item-name">Phoenix Ashe's</span><span class="item-price">$20</span></div>
+        <div class="item-desc">Bourbon Sweetened with House-Crafted Popcorn Syrup, Bitters <em>(2oz)</em></div>
+      </div>
+
+      <div class="item">
+        <div class="item-row"><span class="item-name">Song Bird</span><span class="item-price">$18</span></div>
+        <div class="item-desc">Dual-Expression Rum, House Chicha, Pear–Rosemary Syrup, Citrus, Egg White, and Whipped Cream <em>(3oz)</em></div>
+      </div>
+
+      <div class="item">
+        <div class="item-row"><span class="item-name">Barbed Velvet</span><span class="item-price">$21</span></div>
+        <div class="item-desc">Agave Duo of Tequila and Mezcal, Accented by Spiced Cointreau, Fresh Lime, and House-Crafted Passionfruit Syrup <em>(2oz)</em></div>
+      </div>
+
+      <div class="item">
+        <div class="item-row"><span class="item-name">Feather And Flight</span><span class="item-price">$17</span></div>
+        <div class="item-desc">Bourbon, Amaretto Milk–Washed with Pistachio Ice Cream, Balanced by Port, House Fig Purée, Chartreuse, and Fresh Lime <em>(3oz)</em></div>
+      </div>
+
+      <div class="item">
+        <div class="item-row"><span class="item-name">Emerald Cascade</span><span class="item-price">$19</span></div>
+        <div class="item-desc">Vodka Infused with Sage Leafs, Limoncello, and Chartreuse with Fresh Lemon, House-Made Kiwi Purée, Aromatic Bitters, Topped with Prosecco &amp; Lime Foam <em>(2oz)</em></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span>Classic</span></div>
+
+      <div class="item">
+        <div class="item-row"><span class="item-name">Basil Smash</span><span class="item-price">$16</span></div>
+        <div class="item-desc">Gin, Fresh Lemon Juice, House-Made Simple Syrup, and Hand-Torn Basil for a Bright, Herbaceous Twist <em>(1.5oz)</em></div>
+      </div>
+
+      <div class="item">
+        <div class="item-row"><span class="item-name">Martini</span><span class="item-price">$16</span></div>
+        <div class="item-desc">Vodka or Gin with Dolin Dry Vermouth and a Touch of Olive Brine <em>(2.5oz)</em></div>
+      </div>
+
+      <div class="item">
+        <div class="item-row"><span class="item-name">Negroni</span><span class="item-price">$16</span></div>
+        <div class="item-desc">Balanced Negroni of Gin, Campari, and Red Vermouth, Highlighting Aromatics and Bitter-Sweet Complexity <em>(3oz)</em></div>
+      </div>
+
+      <div class="item">
+        <div class="item-row"><span class="item-name">Espresso Martini</span><span class="item-price">$16</span></div>
+        <div class="item-desc">Vodka, Freshly Brewed Espresso, Kahlúa, House-Made Simple Syrup <em>(2oz)</em></div>
+      </div>
+
+      <div class="item">
+        <div class="item-row"><span class="item-name">Old Fashion</span><span class="item-price">$16</span></div>
+        <div class="item-desc">Whiskey, House-Made Demerara Sugar Syrup, Angostura Bitters <em>(2oz)</em></div>
+      </div>
+
+      <div class="item">
+        <div class="item-row"><span class="item-name">Margarita</span><span class="item-price">$16</span></div>
+        <div class="item-desc">Tequila, Fresh Lime, Triple Sec, and Simple Syrup, Shaken to Highlight Vibrant Citrus and Balanced Sweetness <em>(2oz)</em></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span>Zero Proof</span></div>
+      <p style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:18px; color:var(--gold); margin-bottom:20px;">$12</p>
+      <div class="zero-proof-grid">
+        <div class="zero-proof-item">
+          <div class="item-name">Sbagliato</div>
+          <div class="item-desc">Italian Non-Alcoholic Bitters, Non-Alcoholic Vermouth, and Non-Alcoholic Prosecco, Crafted for a Balanced, Aromatic Experience</div>
+        </div>
+        <div class="zero-proof-item">
+          <div class="item-name">White Lady</div>
+          <div class="item-desc">Non-Alcoholic Gin and Non-Alcoholic Orange Liqueur with Fresh Lemon Juice</div>
+        </div>
+        <div class="zero-proof-item">
+          <div class="item-name">Paper Plane</div>
+          <div class="item-desc">Alcohol-Free Whiskey and Artichoke Amaro, Finished with Non-Alcoholic Bitters to Highlight Herbal and Bitter Nuances</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BAR / SPIRITS -->
+  <div class="panel" id="panel-bar">
+    <div class="spirits-grid">
+
+      <div>
+        <div class="spirit-section">
+          <div class="spirit-section-title">Vodka</div>
+          <div class="spirit-item"><span class="spirit-name">Belvedere</span><span class="spirit-prices">$12 <span>|</span> $22</span></div>
+          <div class="spirit-item"><span class="spirit-name">Ketel One</span><span class="spirit-prices">$9 <span>|</span> $16</span></div>
+        </div>
+
+        <div class="spirit-section">
+          <div class="spirit-section-title">Gin</div>
+          <div class="spirit-item"><span class="spirit-name">Empress Indigo</span><span class="spirit-prices">$11 <span>|</span> $19</span></div>
+          <div class="spirit-item"><span class="spirit-name">Anokha</span><span class="spirit-prices">$10 <span>|</span> $16</span></div>
+          <div class="spirit-item"><span class="spirit-name">Roku</span><span class="spirit-prices">$12 <span>|</span> $20</span></div>
+          <div class="spirit-item"><span class="spirit-name">Hendrick's</span><span class="spirit-prices">$10 <span>|</span> $16</span></div>
+          <div class="spirit-item"><span class="spirit-name">Bombay Sapphire</span><span class="spirit-prices">$10 <span>|</span> $16</span></div>
+          <div class="spirit-item"><span class="spirit-name">Tanqueray No. 10</span><span class="spirit-prices">$12 <span>|</span> $20</span></div>
+          <div class="spirit-item"><span class="spirit-name">Milwest</span><span class="spirit-prices">$11 <span>|</span> $19</span></div>
+        </div>
+
+        <div class="spirit-section">
+          <div class="spirit-section-title">Rum</div>
+          <div class="spirit-item"><span class="spirit-name">Wray &amp; Nephew White</span><span class="spirit-prices">$9 <span>|</span> $16</span></div>
+          <div class="spirit-item"><span class="spirit-name">Zacapa 23</span><span class="spirit-prices">$14 <span>|</span> $22</span></div>
+          <div class="spirit-item"><span class="spirit-name">Havana Club 7 Yr.</span><span class="spirit-prices">$9 <span>|</span> $14</span></div>
+          <div class="spirit-item"><span class="spirit-name">Bumbu</span><span class="spirit-prices">$11 <span>|</span> $18</span></div>
+          <div class="spirit-item"><span class="spirit-name">Dram Mor Fiji 8 Yr.</span><span class="spirit-prices">$25 <span>|</span> $44</span></div>
+          <div class="spirit-item"><span class="spirit-name">Dram Mor Fiji 13 Yr.</span><span class="spirit-prices">$28 <span>|</span> $48</span></div>
+          <div class="spirit-item"><span class="spirit-name">Dram Mor Guyana Diamond 10 Yr.</span><span class="spirit-prices">$22 <span>|</span> $38</span></div>
+          <div class="spirit-item"><span class="spirit-name">Dram Mor Cuba 12 Yr.</span><span class="spirit-prices">$36 <span>|</span> $68</span></div>
+          <div class="spirit-item"><span class="spirit-name">Dram Mor Ch de Bordeneuve 17 Yr.</span><span class="spirit-prices">$24 <span>|</span> $44</span></div>
+        </div>
+
+        <div class="spirit-section">
+          <div class="spirit-section-title">Whisky</div>
+          <div class="spirit-item"><span class="spirit-name">Dramfool Bruichladdich 13 Yr.</span><span class="spirit-prices">$51 <span>|</span> $91</span></div>
+          <div class="spirit-item"><span class="spirit-name">Dramfool Macduff 2 Yr.</span><span class="spirit-prices">$40 <span>|</span> $72</span></div>
+          <div class="spirit-item"><span class="spirit-name">Caskshare Caol Ila 8 Yr.</span><span class="spirit-prices">$27 <span>|</span> $47</span></div>
+          <div class="spirit-item"><span class="spirit-name">Caskshare Collect Series 4067</span><span class="spirit-prices">$28 <span>|</span> $48</span></div>
+          <div class="spirit-item"><span class="spirit-name">Caskshare Collect Series Ag 19.5</span><span class="spirit-prices">$29 <span>|</span> $49</span></div>
+          <div class="spirit-item"><span class="spirit-name">Caskshare Craigellachie 21 Yr.</span><span class="spirit-prices">$44 <span>|</span> $74</span></div>
+          <div class="spirit-item"><span class="spirit-name">Macallan 18</span><span class="spirit-prices">$75 <span>|</span> $140</span></div>
+          <div class="spirit-item"><span class="spirit-name">Johnnie Walker Blue Label</span><span class="spirit-prices">$45 <span>|</span> $80</span></div>
+          <div class="spirit-item"><span class="spirit-name">Hibiki</span><span class="spirit-prices">$15 <span>|</span> $25</span></div>
+          <div class="spirit-item"><span class="spirit-name">Oban 14</span><span class="spirit-prices">$16 <span>|</span> $26</span></div>
+          <div class="spirit-item"><span class="spirit-name">Talisker 10 Yr.</span><span class="spirit-prices">$15 <span>|</span> $25</span></div>
+          <div class="spirit-item"><span class="spirit-name">Talisker Storm</span><span class="spirit-prices">$15 <span>|</span> $25</span></div>
+          <div class="spirit-item"><span class="spirit-name">Laphroaig 10 Yr.</span><span class="spirit-prices">$14 <span>|</span> $24</span></div>
+          <div class="spirit-item"><span class="spirit-name">Glenkinchie 12 Yr.</span><span class="spirit-prices">$16 <span>|</span> $26</span></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="spirit-section">
+          <div class="spirit-section-title">Tequila</div>
+          <div class="spirit-item"><span class="spirit-name">El Tequileno Reposado</span><span class="spirit-prices">$9 <span>|</span> $16</span></div>
+          <div class="spirit-item"><span class="spirit-name">Zumbador Blanco</span><span class="spirit-prices">$9 <span>|</span> $16</span></div>
+          <div class="spirit-item"><span class="spirit-name">Zumbador Reposado</span><span class="spirit-prices">$12 <span>|</span> $20</span></div>
+          <div class="spirit-item"><span class="spirit-name">Zumbador Añejo</span><span class="spirit-prices">$15 <span>|</span> $26</span></div>
+          <div class="spirit-item"><span class="spirit-name">Don Julio Blanco</span><span class="spirit-prices">$12 <span>|</span> $20</span></div>
+          <div class="spirit-item"><span class="spirit-name">Don Julio Reposado</span><span class="spirit-prices">$14 <span>|</span> $28</span></div>
+          <div class="spirit-item"><span class="spirit-name">Casamigos Blanco</span><span class="spirit-prices">$13 <span>|</span> $21</span></div>
+          <div class="spirit-item"><span class="spirit-name">Casamigos Reposado</span><span class="spirit-prices">$16 <span>|</span> $26</span></div>
+          <div class="spirit-item"><span class="spirit-name">1800 Coconut</span><span class="spirit-prices">$10 <span>|</span> $15</span></div>
+          <div class="spirit-item"><span class="spirit-name">Manuscrito Ch.1</span><span class="spirit-prices">$16 <span>|</span> $28</span></div>
+          <div class="spirit-item"><span class="spirit-name">Manuscrito Ch.2</span><span class="spirit-prices">$20 <span>|</span> $34</span></div>
+          <div class="spirit-item"><span class="spirit-name">Manuscrito Ch.3</span><span class="spirit-prices">$18 <span>|</span> $32</span></div>
+          <div class="spirit-item"><span class="spirit-name">Manuscrito Ch.4</span><span class="spirit-prices">$22 <span>|</span> $38</span></div>
+          <div class="spirit-item"><span class="spirit-name">Yeyo Reposado</span><span class="spirit-prices">$16 <span>|</span> $28</span></div>
+          <div class="spirit-item"><span class="spirit-name">Yeyo Rosa Reposado</span><span class="spirit-prices">$18 <span>|</span> $32</span></div>
+          <div class="spirit-item"><span class="spirit-name">Yeyo Joven Luna</span><span class="spirit-prices">$24 <span>|</span> $42</span></div>
+          <div class="spirit-item"><span class="spirit-name">Yeyo Joven Sol</span><span class="spirit-prices">$24 <span>|</span> $42</span></div>
+          <div class="spirit-item"><span class="spirit-name">Don Julio 1942</span><span class="spirit-prices">$25 <span>|</span> $45</span></div>
+          <div class="spirit-item"><span class="spirit-name">Clase Azul Reposado</span><span class="spirit-prices">$30 <span>|</span> $55</span></div>
+        </div>
+
+        <div class="spirit-section">
+          <div class="spirit-section-title">Mezcal</div>
+          <div class="spirit-item"><span class="spirit-name">Casamigos</span><span class="spirit-prices">$15 <span>|</span> $25</span></div>
+          <div class="spirit-item"><span class="spirit-name">400 Conejos</span><span class="spirit-prices">$12 <span>|</span> $20</span></div>
+          <div class="spirit-item"><span class="spirit-name">Del Maguey Vida</span><span class="spirit-prices">$10 <span>|</span> $16</span></div>
+        </div>
+
+        <div class="spirit-section">
+          <div class="spirit-section-title">Bourbon</div>
+          <div class="spirit-item"><span class="spirit-name">Woodford Reserve</span><span class="spirit-prices">$12 <span>|</span> $20</span></div>
+          <div class="spirit-item"><span class="spirit-name">Maker's Mark</span><span class="spirit-prices">$9 <span>|</span> $16</span></div>
+        </div>
+
+        <div class="spirit-section">
+          <div class="spirit-section-title">Cognac</div>
+          <div class="spirit-item"><span class="spirit-name">Rémy Martin VSOP</span><span class="spirit-prices">$14 <span>|</span> $24</span></div>
+          <div class="spirit-item"><span class="spirit-name">Courvoisier</span><span class="spirit-prices">$9 <span>|</span> $16</span></div>
+          <div class="spirit-item"><span class="spirit-name">Hennessey VSOP</span><span class="spirit-prices">$12 <span>|</span> $22</span></div>
+          <div class="spirit-item"><span class="spirit-name">D'Ussé VSOP</span><span class="spirit-prices">$12 <span>|</span> $22</span></div>
+        </div>
+
+        <div class="spirit-section">
+          <div class="spirit-section-title">Rye</div>
+          <div class="spirit-item"><span class="spirit-name">Bull Run 7 Yr. Maple Infused</span><span class="spirit-prices">$14 <span>|</span> $24</span></div>
+          <div class="spirit-item"><span class="spirit-name">Bull Run Straight Rye</span><span class="spirit-prices">$11 <span>|</span> $18</span></div>
+          <div class="spirit-item"><span class="spirit-name">Rig Hand Rocking R Rye</span><span class="spirit-prices">$12 <span>|</span> $22</span></div>
+        </div>
+      </div>
+
+    </div>
+    <p style="text-align:center; font-size:10px; letter-spacing:0.15em; color:rgba(240,236,228,0.25); margin-top:8px;">Single / Double</p>
+  </div>
+
+  <!-- BEER & WINE -->
+  <div class="panel" id="panel-beer">
+    <div class="bw-grid">
+      <div class="bw-section">
+        <div class="bw-title">Beer</div>
+        <div class="bw-item"><span class="bw-name">Praire Fairy</span><span class="bw-price">$8</span></div>
+        <div class="bw-item"><span class="bw-name">The Wolf</span><span class="bw-price">$8</span></div>
+        <div class="bw-item"><span class="bw-name">Aprikat</span><span class="bw-price">$8</span></div>
+        <div class="bw-item"><span class="bw-name">Main Squeeze</span><span class="bw-price">$8</span></div>
+        <div class="bw-item"><span class="bw-name">Non-Alcoholic Guinness</span><span class="bw-price">$7</span></div>
+      </div>
+      <div class="bw-section">
+        <div class="bw-title">Wine</div>
+        <div class="bw-item"><span class="bw-name">Gran Passione</span><span class="bw-price">$12 / $16 / $45</span></div>
+        <div class="bw-item"><span class="bw-name">Jean Paul</span><span class="bw-price">$12 / $16 / $45</span></div>
+        <div class="bw-item"><span class="bw-name">Ogio</span><span class="bw-price">$12 / $16 / $45</span></div>
+        <div class="bw-item"><span class="bw-name">La Marca Proseco</span><span class="bw-price">$12 / $16 / $45</span></div>
+      </div>
+    </div>
+    <p style="text-align:center; font-size:10px; letter-spacing:0.12em; color:rgba(240,236,228,0.25); margin-top:8px;">Wine: 6oz / 9oz / Bottle</p>
+    <div class="note">Please ask your server for this week's features &amp; recommendations</div>
+  </div>
+
+  <div class="page-footer">
+    <a href="https://instagram.com/interformlabs" target="_blank">Powered by Interform</a>
+  </div>
+
+</div>
+<script>
+  function switchTab(id, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('panel-' + id).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
