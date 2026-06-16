@@ -167,7 +167,15 @@
         body: JSON.stringify(payload),
       });
       if (res.ok || res.status === 201) {
-        if (selectedRating <= SMS_THRESHOLD) await sendSMS();
+        let smsOn = true;
+        try {
+          const smsRes = await fetch(`${SUPABASE_URL}/rest/v1/settings?key=eq.sms_enabled&select=value`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+          });
+          const smsData = await smsRes.json();
+          smsOn = smsData[0]?.value === 'true';
+        } catch(e) { smsOn = true; }
+        if (selectedRating <= SMS_THRESHOLD && smsOn) await sendSMS();
         document.getElementById('successScreen').classList.add('visible');
       } else {
         btn.disabled = false; btn.textContent = 'Try Again';
