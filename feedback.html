@@ -114,6 +114,7 @@
   <h2>Thank you<br>for your feedback</h2>
   <div class="success-line"></div>
   <p>Your feedback has been sent directly to our manager. We appreciate you helping us improve.</p>
+  <a href="index.html" style="margin-top:24px; font-size:10px; letter-spacing:0.25em; text-transform:uppercase; color:rgba(201,169,110,0.4); text-decoration:none;">← Back to menu</a>
 </div>
 <script>
   const SUPABASE_URL  = 'https://ummpjbwreufxrlsnvycx.supabase.co';
@@ -148,7 +149,19 @@
     catch (e) { console.error('Webhook error:', e); }
   }
 
+  function hasRecentSubmission() {
+    const last = localStorage.getItem('plume_feedback_sent');
+    if (!last) return false;
+    return (Date.now() - parseInt(last)) < 24 * 60 * 60 * 1000;
+  }
+
   async function submitReview() {
+    if (hasRecentSubmission()) {
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Already submitted today';
+      return;
+    }
     if (selectedRating === 0) { document.getElementById('errorMsg').classList.add('show'); return; }
     const btn = document.getElementById('submitBtn');
     btn.disabled = true; btn.textContent = 'Sending…';
